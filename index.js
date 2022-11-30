@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
@@ -41,6 +41,9 @@ async function run() {
             .db("SecondSet")
             .collection("categories");
         const usersCollection = client.db("SecondSet").collection("users");
+        const productsCollection = client
+            .db("SecondSet")
+            .collection("products");
 
         // get all categories
         app.get("/categories", async (req, res) => {
@@ -50,11 +53,12 @@ async function run() {
         });
 
         // get a single category
-        app.get("/categories/:id", async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const category = await categoriesCollection.findOne(query);
-            res.send(category);
+        app.get("/category/:category", async (req, res) => {
+            const category = req.params.category;
+            const query = { category };
+            const cursor = productsCollection.find(query);
+            const result = await cursor.toArray();
+            res.send(result);
         });
 
         // get access token
@@ -97,17 +101,32 @@ async function run() {
             res.send({ isSeller: user?.role === "seller" });
         });
 
+        // all user
         app.get("/users", async (req, res) => {
             const cursor = usersCollection.find({});
             const users = await cursor.toArray();
             res.send(users);
         });
 
+        //delete a user
+        app.delete("/users/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await usersCollection.deleteOne(query);
+            res.send(result);
+        });
+
+        // check user role
+        app.get("/users/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const user = await usersCollection.findOne(query);
+            res.send({ role: user?.role });
+        });
+
         // create a user
         app.post("/users", async (req, res) => {
             const user = req.body;
-            console.log(user);
-            // TODO: make sure you do not enter duplicate user email
             const result = await usersCollection.insertOne(user);
             res.send(result);
         });
