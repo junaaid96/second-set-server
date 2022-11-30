@@ -30,6 +30,14 @@ async function run() {
             const categories = await cursor.toArray();
             res.send(categories);
         });
+
+        // get a single category
+        app.get("/categories/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const category = await categoriesCollection.findOne(query);
+            res.send(category);
+        });
     } finally {
     }
 }
