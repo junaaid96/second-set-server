@@ -86,15 +86,21 @@ async function run() {
             const email = req.params.email;
             const query = { email };
             const user = await usersCollection.findOne(query);
-            res.send({ isAdmin: user?.role === "buyer" });
+            res.send({ isBuyer: user?.role === "buyer" });
         });
 
         // get a seller
-        app.get("/users/seller/:email", async (req, res) => {
+        app.get("/users/sellers/:email", async (req, res) => {
             const email = req.params.email;
             const query = { email };
             const user = await usersCollection.findOne(query);
-            res.send({ isAdmin: user?.role === "seller" });
+            res.send({ isSeller: user?.role === "seller" });
+        });
+
+        app.get("/users", async (req, res) => {
+            const cursor = usersCollection.find({});
+            const users = await cursor.toArray();
+            res.send(users);
         });
 
         // create a user
