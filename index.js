@@ -44,6 +44,7 @@ async function run() {
         const productsCollection = client
             .db("SecondSet")
             .collection("products");
+        const bookingsCollection = client.db("SecondSet").collection("bookings");
 
         // get all categories
         app.get("/categories", async (req, res) => {
@@ -59,6 +60,25 @@ async function run() {
             const cursor = productsCollection.find(query);
             const result = await cursor.toArray();
             res.send(result);
+        });
+
+        //get all products
+        app.get("/products", async (req, res) => {
+            const cursor = productsCollection.find({});
+            const products = await cursor.toArray();
+            res.send(products);
+        });
+
+        // patch a product 
+        app.patch("/product/:id", verifyJWT, async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const update = {
+                $set: {
+                    isSold: req.body.isSold,
+                },
+            };
+            const result = await productsCollection.updateOne(query, update);
         });
 
         // get access token
@@ -124,10 +144,33 @@ async function run() {
             res.send({ role: user?.role });
         });
 
+        // get all bookings
+        app.get("/bookings", async (req, res) => {
+            const cursor = bookingsCollection.find({});
+            const bookings = await cursor.toArray();
+            res.send(bookings);
+        });
+
+        // get specific buyer booking
+        app.get("/bookings/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { email };
+            const cursor = bookingsCollection.find(query);
+            const bookings = await cursor.toArray();
+            res.send(bookings);
+        });
+
         // create a user
         app.post("/users", async (req, res) => {
             const user = req.body;
             const result = await usersCollection.insertOne(user);
+            res.send(result);
+        });
+
+        //create bookings
+        app.post("/bookings", async (req, res) => {
+            const booking = req.body;
+            const result = await bookingsCollection.insertOne(booking);
             res.send(result);
         });
     } finally {
