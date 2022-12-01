@@ -44,7 +44,9 @@ async function run() {
         const productsCollection = client
             .db("SecondSet")
             .collection("products");
-        const bookingsCollection = client.db("SecondSet").collection("bookings");
+        const bookingsCollection = client
+            .db("SecondSet")
+            .collection("bookings");
 
         // get all categories
         app.get("/categories", async (req, res) => {
@@ -69,7 +71,24 @@ async function run() {
             res.send(products);
         });
 
-        // patch a product 
+        //get specific seller products
+        app.get("/products/:email", async (req, res) => {
+            const email = req.params.email;
+            const query = { seller_email: email };
+            const cursor = productsCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
+        });
+
+        //delete specific seller product
+        app.delete("/product/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await productsCollection.deleteOne(query);
+            res.send(result);
+        });
+
+        // patch a product
         app.patch("/product/:id", verifyJWT, async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
@@ -171,6 +190,13 @@ async function run() {
         app.post("/bookings", async (req, res) => {
             const booking = req.body;
             const result = await bookingsCollection.insertOne(booking);
+            res.send(result);
+        });
+
+        // create a product
+        app.post("/products", async (req, res) => {
+            const product = req.body;
+            const result = await productsCollection.insertOne(product);
             res.send(result);
         });
     } finally {
