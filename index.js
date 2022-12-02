@@ -89,12 +89,12 @@ async function run() {
         });
 
         // patch a product
-        app.patch("/product/:id", verifyJWT, async (req, res) => {
+        app.patch("/product/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const update = {
                 $set: {
-                    isSold: req.body.isSold,
+                    isBooked: req.body.isBooked,
                 },
             };
             const result = await productsCollection.updateOne(query, update);
