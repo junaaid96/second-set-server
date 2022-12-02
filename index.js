@@ -80,6 +80,14 @@ async function run() {
             res.send(products);
         });
 
+        //get advertised products
+        app.get("/advertised", async (req, res) => {
+            const query = { isAdvertised: true, isBooked: false };
+            const cursor = productsCollection.find(query);
+            const products = await cursor.toArray();
+            res.send(products);
+        });
+
         //delete specific seller product
         app.delete("/product/:id", async (req, res) => {
             const id = req.params.id;
@@ -98,6 +106,24 @@ async function run() {
                 },
             };
             const result = await productsCollection.updateOne(query, update);
+            res.send(result);
+        });
+
+        app.patch("/advertisement/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const update = {
+                $set: {
+                    isAdvertised: req.body.isAdvertised,
+                },
+            };
+            const result = await productsCollection.updateOne(
+                query,
+                update,
+                options
+            );
+            res.send(result);
         });
 
         // get access token
@@ -198,7 +224,12 @@ async function run() {
                     role: req.body.role,
                 },
             };
-            const result = await usersCollection.updateOne(query, update, options);
+            const result = await usersCollection.updateOne(
+                query,
+                update,
+                options
+            );
+            res.send(result);
         });
 
         //create bookings
@@ -219,7 +250,7 @@ async function run() {
 }
 run().catch(console.log);
 
-app.get("/", async (req, res) => {
+app.get("/", (req, res) => {
     res.send("SecondSet server is running");
 });
 
