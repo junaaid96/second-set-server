@@ -186,6 +186,21 @@ async function run() {
             res.send(result);
         });
 
+        //patch social media login user (will not creating user in every social media login)
+        app.patch("/users/:email", async (req, res) => {
+            const email = req.body.email;
+            const query = { email };
+            const options = { upsert: true };
+            const update = {
+                $set: {
+                    name: req.body.name,
+                    email: req.body.email,
+                    role: req.body.role,
+                },
+            };
+            const result = await usersCollection.updateOne(query, update, options);
+        });
+
         //create bookings
         app.post("/bookings", async (req, res) => {
             const booking = req.body;
